@@ -11,7 +11,9 @@ run_spatial_catch_sql <- function(fns = here::here("sql",
                                                      "catch-locations-jv.sql"))){
 
   purrr::map(fns, ~{
-    gfdata::run_sql("gffos", readr::read_file(.x)) |>
+    d <- gfdata::run_sql("gffos", readr::read_file(.x)) |>
       tibble::as_tibble()
+    names(d) <- c("ft", "ss", "jv")
+    d
   })
 }
