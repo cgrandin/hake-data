@@ -1,5 +1,3 @@
-# Extract the Landings
-
 library(here)
 hr <- here()
 landings_dir <- file.path(hr, "landings")
