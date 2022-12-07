@@ -24,6 +24,7 @@ run_spatial_catch_sql <- function(fns = here::here("sql",
     return(lst)
   }
 
+  dir.create(here::here("data-output"), showWarnings = FALSE)
   out_fns <- gsub("\\.sql", ".dat", basename(fns))
   walk2(lst, out_fns, ~{
     # Need as.data.frame() here to avoid quoted headers
