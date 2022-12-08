@@ -7,8 +7,6 @@
 #' month stacked for the year given by `bymonth_year`
 #' @param bymonth_year The year to use when making a stacked barplot by month.
 #' Only used if `bymonth` is `TRUE`
-#' @param fn The filename for the output figure. If `NULL`, no file will be
-#' created
 #' @param lu A lookup table which is a data frame of the areas with the
 #' columns `code` <character>, `short_name` <character>, and
 #' `desc` <character>
@@ -24,28 +22,29 @@
 #' @export
 #'
 #' @examples
-plot_area_dist <- function(d,
-                           bymonth = FALSE,
-                           bymonth_year = year(now()),
-                           fn = "default.png",
-                           area_lu = areas_lu,
-                           month_lu = months_lu,
-                           rem_areas = NULL,
-                           title = NULL,
-                           inc_years = (year(now()) - 4):year(now()),
-                           scale_factor = 1000,
-                           view_legend = FALSE,
-                           angle_x_labels = FALSE,
-                           show_x_axis_labels = TRUE,
-                           ylim = NULL,
-                           x_axis_font_size = 4,
-                           y_axis_font_size = 4,
-                           y_label_font_size = 6,
-                           title_font_size = 6){
+plot_area_dist_catch <- function(d,
+                                 bymonth = FALSE,
+                                 bymonth_year = year(now()),
+                                 area_lu = areas_lu,
+                                 month_lu = months_lu,
+                                 rem_areas = NULL,
+                                 title = NULL,
+                                 inc_years = (year(now()) - 4):year(now()),
+                                 scale_factor = 1e6,
+                                 view_legend = FALSE,
+                                 angle_x_labels = FALSE,
+                                 show_x_axis_labels = TRUE,
+                                 ylim = NULL,
+                                 x_axis_font_size = 4,
+                                 y_axis_font_size = 4,
+                                 y_label_font_size = 6,
+                                 title_font_size = 6){
 
   if(bymonth){
+    # Remove January through March
     d <- d |>
-      filter(years == bymonth_year)
+      filter(years == bymonth_year) |>
+      filter(!months %in% 1:3)
   }else{
     if(!is.null(inc_years)){
       d <- d |>
@@ -81,7 +80,8 @@ plot_area_dist <- function(d,
     dplyr::rename(area = desc) |>
     mutate(years = as.character(years),
            months = as.factor(months)) |>
-    mutate(months = forcats::fct_relevel(months, unq_months))
+    mutate(months = forcats::fct_relevel(months, unq_months))|>
+    mutate(months = recode(months, !!!month_lu))
 
   if(bymonth){
     tab <- tab |>
@@ -121,8 +121,7 @@ plot_area_dist <- function(d,
   g <- g +
     scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
     #xlab("Area") +
-    ylab("Catch (tonnes)") +
-    guides(fill = guide_legend(title = ifelse(bymonth, "Month", "Year")))
+    ylab("Catch (thousand tonnes)")
 
   if(angle_x_labels){
     g <- g +
@@ -162,6 +161,12 @@ plot_area_dist <- function(d,
   if(!is.null(title_font_size)){
     g <- g +
       theme(plot.title = element_text(size = title_font_size))
+  }
+
+  if(view_legend){
+    g <- g +
+      guides(fill = guide_legend(ncol = 2,
+                                 title = `if`(bymonth, "Month", "Year")))
   }
 
   g <- g +

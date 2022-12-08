@@ -9,3 +9,4 @@ LogCatchReport*.csv
 
 # Directories
 data-output*
+figures-output*
