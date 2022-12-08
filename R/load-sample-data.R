@@ -13,7 +13,7 @@
 #' along with the data from the major areas defined in `inc_areas`
 #'
 #' @return A list of 3 [tibble::tibble()] containing Freezer trawlers,
-#' Shoreside, and JV sample data
+#' Shoreside, and JV sample data. All column names are lower case
 #' @export
 load_sample_data <- function(fns = here::here("data-sample",
                                               c("hake_domestic_obs_len_wt_age.csv",
@@ -53,7 +53,7 @@ load_sample_data <- function(fns = here::here("data-sample",
     }
     tmp <- read.csv(.x) |>
       as_tibble() |>
-      rename(years = Year,
+      rename(year = Year,
              area = MAJOR_STAT_AREA_CODE,
              length = Length_cm,
              weight =Weight_g,
@@ -63,15 +63,17 @@ load_sample_data <- function(fns = here::here("data-sample",
     tmp_major_minors <- tmp |>
       filter(area %in% inc_major_minor[1] &
                MINOR_STAT_AREA_CODE %in% inc_major_minor[2])
-    bind_rows(tmp_majors, tmp_major_minors)
+    out <- bind_rows(tmp_majors, tmp_major_minors)
+    names(out) <- tolower(names(out))
+    out
   }) |>
     setNames(c("domestic", "jv"))
 
   # Extract Freezer Trawlers and Shoreside from 'domestic'
   ft <- d$domestic |>
-    filter(VESSEL_ID %in% ft_vessels_lu$id)
+    filter(vessel_id %in% ft_vessels_lu$id)
   ss <- d$domestic |>
-    filter(!VESSEL_ID %in% ft_vessels_lu$id)
+    filter(!vessel_id %in% ft_vessels_lu$id)
 
   d <- list(ft = ft,
             ss = ss,
