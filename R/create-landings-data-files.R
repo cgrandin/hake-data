@@ -1,8 +1,4 @@
-library(here)
-hr <- here()
-landings_dir <- file.path(hr, "landings")
-dat_out_dir <- file.path(hr, "data-output")
-r_dir <- file.path(hr, "R")
+r_dir <- file.path(here::here(), "R")
 
 source(file.path(r_dir, "constants.R"))
 source(file.path(r_dir, "load-catch-data.R"))

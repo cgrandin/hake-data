@@ -4,8 +4,10 @@
 .Ruserdata
 
 # Files
+catch-locations*.csv
 LandingsSpeciesDateDMP.csv
 LogCatchReport*.csv
+*.rds
 
 # Directories
 data-output*

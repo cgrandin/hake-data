@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-load_spatial_catch_data <- function(fns = here::here("data-output",
+load_spatial_catch_data <- function(fns = here::here("data-catch",
                                                      c("catch-locations-ft.csv",
                                                        "catch-locations-ss.csv",
                                                        "catch-locations-jv.csv")),
