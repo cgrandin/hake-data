@@ -4,6 +4,7 @@
 .Ruserdata
 
 # Files
+catch-depths*.csv
 catch-locations*.csv
 LandingsSpeciesDateDMP.csv
 LogCatchReport*.csv
