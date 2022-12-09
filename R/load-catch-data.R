@@ -14,7 +14,7 @@
 #'
 #' @return A list of two [tibble::tibble()], the DMP data and the LOGS data
 #' @export
-load_catch_data <- function(catch_data_dir = here("data-catch"),
+load_catch_data <- function(catch_data_dir = here::here("data-catch"),
                             dmp_fn = "LandingsSpeciesDateDMP.csv",
                             log_fn_regex = "LogCatchReport",
                             dmp_skip_head = 1,
