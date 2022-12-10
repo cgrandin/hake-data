@@ -1,26 +1,8 @@
-create_spatial_catch_plots <- function(){
+create_spatial_catch_plots <- function(lst){
 
   hr <- here::here()
   fig_out_dir <- file.path(hr, "figures-output")
   r_dir <- file.path(hr, "R")
-
-  source(file.path(r_dir, "constants.R"))
-  source(file.path(r_dir, "run-spatial-catch-sql.R"))
-  source(file.path(r_dir, "load-spatial-catch-data.R"))
-  source(file.path(r_dir, "theme.R"))
-  source(file.path(r_dir, "plot-area-dist-catch.R"))
-  source(file.path(r_dir, "plot-catch.R"))
-  source(file.path(r_dir, "plotcolour.R"))
-
-  # `run_spatial_catch_sql()` must be run while on the VPN or the DFO intranet.
-  # You can run it on a DFO machine, and transfer the three CSV files
-  # it generates to the data-output directory on your non-DFO machine.
-
-  # run_spatial_catch_sql()
-
-  lst <- load_spatial_catch_data()
-
-  theme_set(hake_theme())
 
   # Make sure to check these areas each year for catch before excluding them
   # (uncomment the next line and check)

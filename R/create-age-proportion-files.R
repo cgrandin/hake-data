@@ -1,13 +1,6 @@
-create_age_proportion_files <- function(){
-  r_dir <- file.path(here::here(), "R")
+create_age_proportion_files <- function(samples){
 
-  source(file.path(r_dir, "constants.R"))
-  source(file.path(r_dir, "load-sample-data.R"))
-  source(file.path(r_dir, "sample-summary.R"))
-  source(file.path(r_dir, "fit-lw.R"))
-  source(file.path(r_dir, "calc-age-props.R"))
-  source(file.path(r_dir, "calc-num-fish-aged.R"))
-  source(file.path(r_dir, "calc-num-trips-hauls-sampled-age.R"))
+  r_dir <- file.path(here::here(), "R")
 
   samples <- load_sample_data(ft_vessels_lu = ft_vessels, rebuild_rds = FALSE)
 

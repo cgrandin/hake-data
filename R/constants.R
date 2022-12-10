@@ -2,6 +2,31 @@ library(tidyverse)
 require(lubridate)
 require(RColorBrewer)
 
+r_dir <- here::here("R")
+source(file.path(r_dir, "calc-age-props.R"))
+source(file.path(r_dir, "calc-landings-by-fleet.R"))
+source(file.path(r_dir, "calc-num-fish-aged.R"))
+source(file.path(r_dir, "calc-num-trips-hauls-sampled-age.R"))
+source(file.path(r_dir, "create-age-proportion-files.R"))
+source(file.path(r_dir, "create-catch-fleet-df.R"))
+source(file.path(r_dir, "create-catch-total-df.R"))
+source(file.path(r_dir, "create-depths-by-year.R"))
+source(file.path(r_dir, "create-landings-data-files.R"))
+source(file.path(r_dir, "create-spatial-catch-plots.R"))
+source(file.path(r_dir, "fit-lw.R"))
+source(file.path(r_dir, "load-catch-data.R"))
+source(file.path(r_dir, "load-sample-data.R"))
+source(file.path(r_dir, "load-spatial-catch-data.R"))
+source(file.path(r_dir, "plot-area-dist-catch.R"))
+source(file.path(r_dir, "plot-catch.R"))
+source(file.path(r_dir, "plotcolour.R"))
+source(file.path(r_dir, "plot-depths.R"))
+source(file.path(r_dir, "run-spatial-catch-sql.R"))
+source(file.path(r_dir, "sample-summary.R"))
+source(file.path(r_dir, "theme.R"))
+
+theme_set(hake_theme())
+
 # Turn off the following type messages (they're unnecessary):
 # `summarise()` has grouped output by 'x'. You can override using the `.groups` argument.
 options(dplyr.summarise.inform = FALSE)
@@ -9,6 +34,8 @@ options(scipen = 999)
 
 # Conversion factor since FOS records catch in pounds
 CONV_LBS_KILOS   <- 2.20462262
+
+fns <- c()
 
 # vessel ids for freezer trawlers
 ft_vessels <- tibble(name = c("Viking Enterprise", "Northern Alliance",

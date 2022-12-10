@@ -1,8 +1,20 @@
-
-plot_depths <- function(d,
+#' Plot depth boxplots for Freezer trawlers and Shoreside fleets
+#'
+#' @param fleet_lst A list as output by [create_depth_by_year()]
+#' @param yrs A vector of years to include in the plot
+#' @param ylim The limits of the y-axis
+#' @param units Either "fm" for fathoms or "m" for meters (default)
+#' @param fn The filename to save the plot to. If `NULL`, return
+#' the plot instead
+#'
+#' @return Either a [ggplot2::ggplot()] plot or Nothing is `fn` is `NULL`
+#' @export
+plot_depths <- function(fleet_lst,
                         yrs = 2017:2022,
                         ylim = c(0, ifelse(units == "m", 1000, 500)),
-                        units = c("fm", "m")){
+                        units = c("m", "fm"),
+                        fn = here::here("figures-output",
+                                        "can-depths.png")){
 
   units <- match.arg(units)
 
@@ -11,85 +23,60 @@ plot_depths <- function(d,
 
   cols <- plotcolour(length(yrs))
 
-  setEPS()
-  #postscript("can-bottom-depths.eps") ##, res=300, width=10, height=7, units="in")
-  png(file.path(fig_dir, "hake-bottom-depths.png"), res = 300, width = 10, height = 7, units = "in")
-  oldpar <- par()
-  par(mfrow = c(2, 2),
-      #oma = c(5, 4, 0, 0) + 0.1,
-      mar = c(4, 4, 1, 1) + 0.1)
+  depth_cols <- c("bottom", "gear")
 
-  if(units == "m"){
+  # Remove JV
+  fleet_lst <- fleet_lst[-3]
+
+  d <- imap(fleet_lst, function(depth_lst, fleet_name){
+    imap(depth_lst, function(depth_df, depth_name){
+      depth_df |>
+        mutate(fleet = ifelse(fleet_name == "ft",
+                              "Freezer Trawlers",
+                              ifelse(fleet_name == "ss",
+                                     "Shoreside",
+                                     fleet_name)),
+               type = paste0(depth_name, " depth"))
+    }) |>
+      map_df(~{.x})
+  }) |>
+    map_df(~{.x}) |>
+    filter(year %in% yrs) |>
+    mutate(fleet_type = paste0(fleet, " - ", type)) |>
+    select(-fleet, -type) |>
+    mutate(Year = as.character(year))
+
+  if(units == "fm"){
     d <- d |>
-      mutate(bottomdepth_fm = 1.8288 * bottomdepth_fm,
-             geardepth_fm = 1.8288 * geardepth_fm)
+      mutate_at(vars(lower95,
+                     lowerhinge,
+                     median,
+                     upperhinge,
+                     upper95),
+                ~{.x / 1.8288})
   }
 
-  d_ft <- d |>
-    filter(vessel %in% ft_vessels$cfv_num) |>
-    filter(year >= min(yrs) & year <= max(yrs))
-  d_ss <- d |>
-    filter(!vessel %in% ft_vessels$cfv_num) |>
-    filter(year >= min(yrs) & year <= max(yrs))
+  g <- ggplot(d, aes(x = Year,
+                     fill = Year,
+                     group = Year,
+                     ymin = lower95,
+                     lower = lowerhinge,
+                     middle = median,
+                     upper = upperhinge,
+                     ymax = upper95)) +
+    geom_boxplot(stat = "identity", color = "grey") +
+    ylab(ifelse(units == "m", "Meters", "Fathoms")) +
+    scale_fill_manual(values = cols) +
 
-  boxplot(bottomdepth_fm~year,
-          data = d_ft,
-          outline = FALSE,
-          xlab = "",
-          ylab = ifelse(units == "m", "Meters", "Fathoms"),
-          main = "Freezer trawlers - bottom depth",
-          lty = 1,
-          lwd = 1,
-          las = 1,
-          col = cols,
-          border = "grey",
-          ylim = ylim,
-          staplelty = 0)
+    facet_wrap(~ fleet_type) +
+    theme(strip.background = element_rect(fill="white"),
+          strip.placement = "outside")
+  if(!is.null(ylim)){
+    g <- g +
+      coord_cartesian(ylim = ylim)
+  }
 
-  boxplot(geardepth_fm~year,
-          data = d_ft,
-          outline = FALSE,
-          xlab = "",
-          ylab = "",
-          main = "Freezer trawlers - Fishing depth",
-          lty = 1,
-          lwd = 1,
-          las = 1,
-          col = cols,
-          border = "grey",
-          ylim = ylim,
-          staplelty = 0)
-
-  boxplot(bottomdepth_fm~year,
-          data = d_ss,
-          outline = FALSE,
-          xlab = "",
-          ylab = ifelse(units == "m", "Meters", "Fathoms"),
-          main = "Shoreside - bottom depth",
-          lty = 1,
-          lwd = 1,
-          las = 1,
-          col = cols,
-          border = "grey",
-          ylim = ylim,
-          staplelty = 0)
-
-  boxplot(geardepth_fm~year,
-          data = d_ss,
-          outline = FALSE,
-          xlab = "",
-          ylab = "",
-          main = "Shoreside - Fishing depth",
-          lty = 1,
-          lwd = 1,
-          las = 1,
-          col = cols,
-          border = "grey",
-          ylim = ylim,
-          staplelty = 0)
-
-
-    mtext("Year", 1, -2, outer = TRUE)
-  dev.off()
-  par(oldpar)
+  if(!is.null(fn)){
+    ggsave(fn, g)
+  }
 }

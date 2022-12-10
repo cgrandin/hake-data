@@ -14,42 +14,40 @@
 #' @examples
 #' d_ss <- load_spatial_catch_data("ss")
 #' gear_depth_ss <- get_depth_by_year(d_ss, "gear")
-create_depth_by_year <- function(d,
-                                 type = "bottom",
+create_depth_by_year <- function(lst,
                                  yrs = NULL,
                                  min_depth_cutoff = 50 / 1.8288){
-  if(type == "bottom"){
-    dpth <- d %>% filter(!is.na(bottomdepth_fm)) %>%
-      transmute(year = year(catchdate),
-                depth = bottomdepth_fm * 1.8288)
-  }else if(type == "gear"){
-    dpth <- d %>% filter(!is.na(geardepth_fm)) %>%
-      transmute(year = year(catchdate),
-                depth = geardepth_fm * 1.8288)
-  }else{
-    stop("type must be 'bottom' or 'gear'", call. = FALSE)
-  }
-  dpth <- dpth %>%
-    filter(depth >= min_depth_cutoff)
 
-  dpth <- dpth %>%
-    group_by(year) %>%
-    do(as.data.frame(t(boxplot.stats(.$depth)$`stats`))) %>%
-    ungroup() %>%
-    transmute(year,
-              lower95 = V1,
-              lowerhinge = V2,
-              median = V3,
-              upperhinge = V4,
-              upper95 = V5)
-  if(!is.null(yrs)){
-    dpth <- dpth %>%
-      filter(year %in% yrs)
-  }
+  depth_cols <- c("bottom", "gear")
 
-  fleet <- paste0(unique(d$fishery), collapse = "")
-  filename <- here::here("data-output", paste0("depth-can-", fleet, "-", type,".csv"))
-  write_csv(dpth, filename)
-  message("Wrote file ", filename)
-  invisible(dpth)
+  out <- imap(lst, function(fleet_df, fleet){
+    map(depth_cols, function(depth_col){
+      depth_col_sym <- sym(paste0(depth_col, "depth_fm"))
+      dpth <- fleet_df |>
+        filter(!is.na(!!depth_col_sym)) |>
+        transmute(year = year(catchdate),
+                  depth = !!depth_col_sym * 1.8288) |>
+        filter(depth >= min_depth_cutoff) |>
+        group_by(year) %>%
+        do(as.data.frame(t(boxplot.stats(.$depth)$`stats`))) |>
+        ungroup() |>
+        transmute(year,
+                  lower95 = V1,
+                  lowerhinge = V2,
+                  median = V3,
+                  upperhinge = V4,
+                  upper95 = V5)
+
+      if(!is.null(yrs)){
+        dpth <- dpth |>
+          filter(year %in% yrs)
+      }
+      fn <- here::here("data-output", paste0("depth-can-", fleet, "-", depth_col,".csv"))
+      write_csv(dpth, fn)
+      message("Wrote file `", fn)
+      dpth
+    }) |>
+      setNames(c("bottom", "gear"))
+  })
+  invisible(out)
 }
