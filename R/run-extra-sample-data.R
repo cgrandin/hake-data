@@ -9,7 +9,7 @@
 #'
 #' @export
 #' @importFrom gfdata get_commercial_samples
-run_extra_sample_data <- function(fn = here::here("data-samples", "samples-extra.csv")){
+run_extra_sample_data <- function(fn = here::here("data-samples", "samples-extra.rds")){
 
   major_areas <- c("02", "03", "04", "05", "06", "07", "08", "09")
 
@@ -19,5 +19,5 @@ run_extra_sample_data <- function(fn = here::here("data-samples", "samples-extra
     filter(major_stat_area_code %in% major_areas |
              (major_stat_area_code == "01" & minor_stat_area_code == "20"))
 
-  write.csv(d, fn, quote = FALSE)
+  saveRDS(d, fn)
 }
