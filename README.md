@@ -85,10 +85,7 @@ Once finished, export the two output tables `hake_domestic_obs_len_wt_age` and
   `data-sample` directory on that system.</span>
   
   ```diff
-  - When you are done and have the CSV files successfully exported, delete the tables
-  inside the Access database and then run the "Database compact and repair" tool. This ensures if you
-  accidentally commit the `data-sample/GFBioOracle.mdb` it will not be massive and ruin your
-  repository. It can be several Gigabytes in size when populated.
+  - When you are done and have the CSV files successfully exported, delete the tables inside the Access database and then run the "Database compact and repair" tool. This ensures if you accidentally commit the `data-sample/GFBioOracle.mdb` it will not be massive and ruin your repository. It can be several Gigabytes in size when populated.
  ```
 
 ### Extract Weight-at-age
