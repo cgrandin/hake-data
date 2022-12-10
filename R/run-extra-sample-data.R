@@ -19,5 +19,5 @@ run_extra_sample_data <- function(fn = here::here("data-samples", "samples-extra
     filter(major_stat_area_code %in% major_areas |
              (major_stat_area_code == "01" & minor_stat_area_code == "20"))
 
-  saveRDS(d, fn)
+  write.csv(d, fn, quote = FALSE)
 }

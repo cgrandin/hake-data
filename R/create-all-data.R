@@ -11,7 +11,7 @@ create_all_data <- function(){
   # run_extra_sample_data()
 
   samples <- load_sample_data(ft_vessels_lu = ft_vessels, rebuild_rds = FALSE)
-  samples_extra <- load_extra_sample_data(ft_vessels_lu = ft_vessels, rebuild_rds = FALSE)
+  samples_extra <- read.csv(here::here("data-sample", "samples-extra.csv"))
   catches <- load_catch_data()
   catches_lst <- load_spatial_catch_data()
 
