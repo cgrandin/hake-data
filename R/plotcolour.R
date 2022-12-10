@@ -40,7 +40,10 @@ plotcolour <- function(num_colors = 10,
 
     palette_func <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(palette_info$maxcolors, palette))
     palette_colors <- palette_func(n = num_colors - palette_info$maxcolors + 3)
-    # Get rid of the last few colors by creating 3 more color than needed and then removing them from the beginning
+
+    # Get rid of the last few colors by creating 3 more color than needed and
+    # then removing them from the beginning. This avoids the last color being
+    # the same as the first when more than `palette_info$maxcolors` length
     palette_colors <- palette_colors[-(1:3)]
     colors <- c(palette_colors, colors)
   }
