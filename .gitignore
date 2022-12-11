@@ -4,6 +4,8 @@
 .Ruserdata
 
 # Files
+data-sample/hake_domestic_obs_len_wt_age.csv
+data-sample/hake_jv_obs_len_wt_age.csv
 catch-depths*.csv
 catch-locations*.csv
 LandingsSpeciesDateDMP.csv

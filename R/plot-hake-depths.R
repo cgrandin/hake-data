@@ -9,12 +9,12 @@
 #'
 #' @return Either a [ggplot2::ggplot()] plot or Nothing is `fn` is `NULL`
 #' @export
-plot_depths <- function(fleet_lst,
-                        yrs = 2017:2022,
-                        ylim = c(0, ifelse(units == "m", 1000, 500)),
-                        units = c("m", "fm"),
-                        fn = here::here("figures-output",
-                                        "can-depths.png")){
+plot_hake_depths <- function(fleet_lst,
+                             yrs = 2017:2022,
+                             ylim = c(0, ifelse(units == "m", 1000, 500)),
+                             units = c("m", "fm"),
+                             fn = here::here("figures-output",
+                                             "can-depths.png")){
 
   units <- match.arg(units)
 
@@ -76,7 +76,10 @@ plot_depths <- function(fleet_lst,
       coord_cartesian(ylim = ylim)
   }
 
-  if(!is.null(fn)){
+  if(is.null(fn)){
+    g
+  }else{
     ggsave(fn, g)
+    message("Created the figure in `", fn, "`.")
   }
 }
