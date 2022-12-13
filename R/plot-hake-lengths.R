@@ -30,13 +30,13 @@ plot_hake_lengths <- function(lst,
     map_df(~{.x})
   g <- gfplot::plot_lengths(tab,
                             fill_col = fill_col,
-                            ...)
-
+                            ...) +
+    theme(legend.position = "none")
 
   if(is.null(fn)){
     g
   }else{
     ggsave(fn, g)
-    message("Created the figure in `", fn, "`.")
+    message("Created length frequency figure in `", fn, "`.")
   }
 }

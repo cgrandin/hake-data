@@ -84,6 +84,8 @@ create_spatial_catch_plots <- function(lst){
                              title = "Freezer Trawler cumulative catch",
                              rem_areas = exclude_areas,
                              cumulative = TRUE,
+                             view_legend = TRUE,
+                             leg_pos = c(0.2, 0.68),
                              ylim = cumcatch_ylim),
                   plot_catch(lst[[2]],
                              title = "Shoreside catch",
@@ -93,8 +95,6 @@ create_spatial_catch_plots <- function(lst){
                              title = "Shoreside cumulative catch",
                              rem_areas = exclude_areas,
                              cumulative = TRUE,
-                             view_legend = TRUE,
-                             leg_pos = c(0.2, 0.68),
                              ylim = cumcatch_ylim))
 
   dir.create(fig_out_dir, showWarnings = FALSE)

@@ -74,7 +74,8 @@ plot_area_dist_catch <- function(d,
 
   tab <- d |>
     select(years, months, PFMC, catch) |>
-    dplyr::rename(area = PFMC) |>
+    mutate(area = PFMC) |>
+    #dplyr::rename(area = PFMC) |>
     left_join(area_lu, by = "area") |>
     select(-area, -short_name) |>
     dplyr::rename(area = desc) |>
@@ -83,6 +84,12 @@ plot_area_dist_catch <- function(d,
     mutate(months = forcats::fct_relevel(months, unq_months))|>
     mutate(months = recode(months, !!!month_lu))
 
+  tab <- tab |>
+    mutate(PFMC = as.character(PFMC)) |>
+    mutate(PFMC = as.factor(PFMC)) |>
+    mutate(PFMC = fct_relevel(PFMC, levels = as.character(unq_areas)))
+
+  browser()
   if(bymonth){
     tab <- tab |>
       select(-years) |>

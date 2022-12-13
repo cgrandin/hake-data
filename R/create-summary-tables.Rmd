@@ -1,0 +1,88 @@
+---
+title: "Untitled"
+author: "Chris Grandin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(kableExtra)
+knitr::opts_chunk$set(echo = TRUE)
+source(here::here("R", "constants.R"))
+
+```
+
+```{r table-sample-summary, results = "asis", echo = FALSE,  message = FALSE}
+# ----- Samples
+  samples <- load_sample_data(ft_vessels_lu = ft_vessels, rebuild_rds = FALSE)
+  samples_extra <- samples |>
+    map_df(~{.x}) |>
+    mutate(sex = 1,
+           usability_code = 1,
+           species_category_code = 1,
+           major_stat_area_code = areas_lu[area, ]$code,
+           species_common_name = "225")
+  samples_extra_ft <- samples$ft |>
+    mutate(sex = 1,
+           usability_code = 1,
+           species_category_code = 1,
+           major_stat_area_code = areas_lu[area, ]$code,
+           species_common_name = "225")
+  samples_extra_ss <- samples$ss |>
+    mutate(sex = 1,
+           usability_code = 1,
+           species_category_code = 1,
+           major_stat_area_code = areas_lu[area, ]$code,
+           species_common_name = "225")
+  samples_extra_lst <- list(samples_extra,
+                            samples_extra_ft,
+                            samples_extra_ss)
+
+  
+  fleet_names_lst <- c("All vessels",
+                       "Freezer trawler",
+                       "Shoreside")
+
+d <- sample_summary(samples_extra_lst)
+
+tab_lst <- d$by_yr
+names(tab_lst) <- fleet_names_lst
+# Reorder the fleet tables
+tab_lst <- c(tab_lst[2], tab_lst[3], tab_lst[1])
+
+yrs <- 2018:2022
+# Remove unnecessary columns, and filter for the years to show
+tab_lst <- map2(tab_lst, seq_along(tab_lst), ~{
+  .x <- .x |> 
+    filter(year %in% yrs)
+  if(.y > 1){
+    .x <- .x |>
+      select(ages, lengths, weights)
+  }else{
+    .x <- .x |>
+      select(year, ages, lengths, weights)
+  }
+  .x
+})
+
+tab <- tab_lst |> 
+  map_dfc(~{.x})
+
+nms <- "Year"
+for(i in seq_along(tab_lst)){
+  nms <- c(nms, "Ages", "Lengths", "Weights")
+}
+names(tab) <- nms
+
+header <- c(" " = 1, 
+            "Freezer trawler" = 3,
+            "Shoreside" = 3,
+            "All vessels" = 3)
+grp_lines_after <- c(1, seq(4, length(tab_lst) * 3 + 1, 3))
+kbl(tab) |>
+  kable_styling() |> 
+  column_spec(grp_lines_after,
+              border_right = TRUE) |> 
+  row_spec(nrow(tab), hline_after = TRUE) |> 
+  add_header_above(header)
+```

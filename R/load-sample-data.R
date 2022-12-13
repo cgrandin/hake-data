@@ -51,13 +51,17 @@ load_sample_data <- function(fns = here::here("data-sample",
       stop("The following data file does not exist:\n",
            .x, call. = FALSE)
     }
+
     tmp <- read.csv(.x) |>
       as_tibble() |>
       rename(year = Year,
              area = MAJOR_STAT_AREA_CODE,
              length = Length_cm,
-             weight =Weight_g,
-             age = SPECIMEN_AGE)
+             weight = Weight_g,
+             age = SPECIMEN_AGE) |>
+      mutate(TRIP_END_DATE = gsub("( +[0-9]+:[0-9]{2}:[0-9]{2}$)",
+                                  "",
+                                  TRIP_END_DATE))
     tmp_majors <- tmp |>
       filter(area %in% inc_areas)
     tmp_major_minors <- tmp |>

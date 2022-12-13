@@ -25,6 +25,9 @@ create_waa <- function(d,
   names(d) <- tolower(names(d))
   nms <- c("CAN_shoreside", "CAN_freezer", "CAN_jv", "CAN_polish")
 
+  sex_code_lu <- c("0" = "U",
+                   "1" = "M",
+                   "2" = "F")
   out <- map(nms, ~{
     k <- d
     if(.x == "CAN_shoreside"){
@@ -43,51 +46,47 @@ create_waa <- function(d,
         filter(trip_sub_type_desc %in% c("POLISH COMM NATIONAL", "POLISH COMMERCIAL SUPPLEMENTAL"))
     }
 
+    k <- k |>
+      filter(!is.na(sex)) |>
+      mutate(sex = as.character(sex)) |>
+      mutate(sex = recode(sex, !!!sex_code_lu))
     if(type == "wal"){
-      k |> transmute(Source = .x,
+      j <- k |> transmute(Source = .x,
                      Weight_kg = weight / 1000,
-                     Sex = ifelse(is.na(sex),
-                                  NA_character_,
-                                  ifelse(sex == 1,
-                                         "M",
-                                         ifelse(sex == 2,
-                                                "F",
-                                                "U"))),
+                     Sex = sex,
                      Age_yrs = age,
                      Length_cm = length,
-                     Month = month(trip_start_date),
-                     Year = year(trip_start_date)) |>
+                     Month = month(mdy(k$trip_end_date)),
+                     Year = year(mdy(trip_end_date))) |>
         filter(!is.na(Weight_kg),
                !is.na(Sex),
                !is.na(Age_yrs),
                !is.na(Length_cm),
                !is.na(Weight_kg),
                !is.na(Month),
-               !is.na(Year))
+               !is.na(Year)) |>
+        arrange(Year, Month)
     }else if(type == "wa"){
-      k |> transmute(Source = .x,
+      j <- k |> transmute(Source = .x,
                      Weight_kg = weight / 1000,
-                     Sex = ifelse(is.na(sex),
-                                  NA_character_,
-                                  ifelse(sex == 1,
-                                         "M",
-                                         ifelse(sex == 2,
-                                                "F",
-                                                "U"))),
+                     Sex = sex,
                      Age_yrs = age,
-                     Month = month(trip_start_date),
-                     Year = year(trip_start_date)) |>
+                     Month = month(mdy(k$trip_end_date)),
+                     Year = year(mdy(trip_end_date))) |>
         filter(!is.na(Weight_kg),
                !is.na(Sex),
                !is.na(Age_yrs),
                !is.na(Weight_kg),
                !is.na(Month),
-               !is.na(Year))
+               !is.na(Year)) |>
+        arrange(Year, Month)
     }
+    j
   }) |>
     rev() |>
     map_df(~{.x})
 
   write.csv(out, fn, quote = FALSE)
+  message("Wrote weight-at-age file `", fn, "`")
   invisible()
 }
