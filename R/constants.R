@@ -72,6 +72,23 @@ areas_lu <- tibble(code = c("00", "01", "02",
                             "Oregon", "California", "Puget Sound",
                             "Undefined"))
 
+areas_names_lu <- c("0" = areas_lu$desc[1],
+                    "1" = areas_lu$desc[2],
+                    "2" = areas_lu$desc[3],
+                    "3" = areas_lu$desc[4],
+                    "4" = areas_lu$desc[5],
+                    "5" = areas_lu$desc[6],
+                    "6" = areas_lu$desc[7],
+                    "7" = areas_lu$desc[8],
+                    "8" = areas_lu$desc[9],
+                    "9" = areas_lu$desc[10],
+                    "10" = areas_lu$desc[11],
+                    "11" = areas_lu$desc[12],
+                    "22" = areas_lu$desc[13],
+                    "23" = areas_lu$desc[14],
+                    "68" = areas_lu$desc[15],
+                    "99" = areas_lu$desc[16])
+
 months_lu <- c("1" = "Jan",
                "2" = "Feb",
                "3" = "Mar",

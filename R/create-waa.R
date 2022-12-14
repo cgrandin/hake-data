@@ -32,12 +32,16 @@ create_waa <- function(d,
     k <- d
     if(.x == "CAN_shoreside"){
       k <- k |>
-        filter(trip_sub_type_desc %in% c("OBSERVED DOMESTIC", "NON - OBSERVED DOMESTIC")) |>
+        #filter(trip_sub_type_desc %in% c("OBSERVED DOMESTIC", "NON - OBSERVED DOMESTIC")) |>
         filter(!vessel_id %in% ft_vessels_lu$id)
     }else if(.x == "CAN_freezer"){
       k <- k |>
-        filter(trip_sub_type_desc %in% c("OBSERVED DOMESTIC", "NON - OBSERVED DOMESTIC")) |>
         filter(vessel_id %in% ft_vessels_lu$id)
+      # In 2019, the weights were just made up to be 1lb, and then 0.5 lb increments by eye
+      # We remove them due to this bias.
+      # This was discovered by looking at the gfplot::plot_lengths() histograms for weight
+      k <- k |>
+        filter(!sample_id %in% c(542227, 542228, 542229, 542279, 542280, 542281, 542282, 542283))
     }else if(.x == "CAN_jv"){
       k <- k |>
         filter(trip_sub_type_desc == "OBSERVED J-V")
@@ -46,18 +50,14 @@ create_waa <- function(d,
         filter(trip_sub_type_desc %in% c("POLISH COMM NATIONAL", "POLISH COMMERCIAL SUPPLEMENTAL"))
     }
 
-    k <- k |>
-      filter(!is.na(sex)) |>
-      mutate(sex = as.character(sex)) |>
-      mutate(sex = recode(sex, !!!sex_code_lu))
     if(type == "wal"){
       j <- k |> transmute(Source = .x,
-                     Weight_kg = weight / 1000,
-                     Sex = sex,
-                     Age_yrs = age,
-                     Length_cm = length,
-                     Month = month(mdy(k$trip_end_date)),
-                     Year = year(mdy(trip_end_date))) |>
+                          Weight_kg = weight / 1000,
+                          Sex = "U",
+                          Age_yrs = age,
+                          Length_cm = length,
+                          Month = month(mdy(k$trip_end_date)),
+                          Year = year(mdy(trip_end_date))) |>
         filter(!is.na(Weight_kg),
                !is.na(Sex),
                !is.na(Age_yrs),
@@ -69,7 +69,7 @@ create_waa <- function(d,
     }else if(type == "wa"){
       j <- k |> transmute(Source = .x,
                      Weight_kg = weight / 1000,
-                     Sex = sex,
+                     Sex = "U",
                      Age_yrs = age,
                      Month = month(mdy(k$trip_end_date)),
                      Year = year(mdy(trip_end_date))) |>

@@ -3,11 +3,12 @@
 #' @param d A tibble holding the spatial data, as output by
 #' [load_spatial_catch_data()]
 #' @param cumulative If `TRUE`, plot cumulative catches
-#' @param lu A lookup table which is a data frame of the areas with the
-#' columns `code` <character>, `short_name` <character>, and
-#' `desc` <character>
+#' @param grp_col A column name to use as the grouping variable in the
+#' [ggplot2::ggplot()]
+#' @param month_lu A lookup table containing month numbers and month names
 #' @param rem_areas A vector of areas to remove. Numerical values representing
 #' the `code` column in `lu` are required
+#' @param area_lu A lookup table containing the area numbers and names
 #' @param title Plot title
 #' @param inc_years Years to include in the plot. If `NULL`, all years will
 #' be included
@@ -20,9 +21,10 @@
 #' @examples
 plot_catch <- function(d,
                        cumulative = FALSE,
-                       #area_lu = areas_lu,
+                       grp_col = c("years", "areas"),
                        month_lu = months_lu,
                        rem_areas = NULL,
+                       area_lu = NULL,
                        title = NULL,
                        inc_years = (year(now()) - 4):year(now()),
                        scale_factor = 1e6,
@@ -33,14 +35,24 @@ plot_catch <- function(d,
                        angle_x_labels = FALSE,
                        show_x_axis_labels = TRUE,
                        ylim = NULL,
-                       x_axis_font_size = 4,
-                       y_axis_font_size = 4,
+                       x_axis_font_size = 6,
+                       y_axis_font_size = 6,
                        y_label_font_size = 6,
                        title_font_size = 6){
 
+  grp_col <- match.arg(grp_col)
+
+  d <- d |>
+    rename(areas = PFMC)
+
+  if(!grp_col %in% names(d)){
+    stop("The `grp_col` column `", grp_col, "` does not exist in data frame `d`",
+         call. = FALSE)
+  }
+
   if(!is.null(rem_areas)){
     d <- d |>
-      filter(!PFMC %in% rem_areas)
+      filter(!areas %in% rem_areas)
   }
 
   if(!is.null(inc_years)){
@@ -51,50 +63,48 @@ plot_catch <- function(d,
   d <- d |>
     mutate(catch = catch / scale_factor)
 
-  #area_lu <- area_lu |>
-    #mutate(code = as.numeric(code))
-
-  # Get all unique included areas
-  #unq_areas <- sort(unique(d$PFMC))
-  #unq_areas_nms <- area_lu |>
-  #  filter(code %in% unq_areas) |>
-  #  pull(short_name)
-  unq_months <- as.character(sort(unique(d$months)))
-
-  #names(area_lu) <- c("area", "short_name", "desc")
+  grp_col_sym <- sym(grp_col)
 
   tab <- d |>
-    select(years, months, catch) |>
-    mutate(years = as.character(years)) |>
+    select(!!grp_col_sym, months, catch) |>
+    mutate(!!grp_col_sym := as.character(!!grp_col_sym)) |>
     mutate(months = recode(months, !!!month_lu)) |>
-    group_by(years) |>
+    group_by(!!grp_col_sym) |>
     complete(months = month_lu, fill = list(catch = 0)) |>
     mutate(months = as.factor(months)) |>
     mutate(months = forcats::fct_relevel(months,  month_lu)) |>
     arrange(months) |>
     ungroup() |>
-    group_by(years, months) |>
+    group_by(!!grp_col_sym, months) |>
     summarize(catch = sum(catch)) |>
     ungroup() |>
-    mutate(years = as.factor(years))
+    mutate(grp_col_sym := as.factor(!!grp_col_sym))
 
-    num_yrs <- length(unique(tab$years))
+    num_grps <- length(unique(tab[[grp_col]]))
 
     if(cumulative){
       tab <- tab |>
-        group_by(years) |>
+        group_by(!!grp_col_sym) |>
         mutate(catch = cumsum(catch)) |>
         ungroup()
     }
 
-    g <- ggplot(tab, aes(x = months, y = catch, color = years, group = years)) +
+    if(grp_col == "areas"){
+      if(is.null(area_lu)){
+        stop("`area_lu` is `NULL` but is needed because you chose `areas` ",
+             "for `grp_col`", call. =  FALSE)
+      }
+      tab <- tab |>
+        arrange(areas) |>
+        mutate(areas = recode(areas, !!!area_lu))
+    }
+
+    g <- ggplot(tab, aes(x = months, y = catch, color = !!grp_col_sym, group = !!grp_col_sym)) +
       geom_line(size = line_thickness,
                 show.legend = view_legend) +
       geom_point(size = point_size,
                  show.legend = view_legend) +
-      scale_color_manual(values = plotcolour(num_yrs))
-
-    #num_areas <- length(unq_areas)
+      scale_color_manual(values = plotcolour(num_grps))
 
     g <- g +
       scale_y_continuous(labels = scales::comma, expand = c(0, 0)) +
@@ -145,7 +155,7 @@ plot_catch <- function(d,
       if(!is.null(leg_pos)){
         g <- g +
           guides(color = guide_legend(ncol = 2,
-                                      title = "Year"),
+                                      title = str_to_title(grp_col)),
                  shape = guide_legend(override.aes = list(size = 0.75)),
                  color = guide_legend(override.aes = list(size = 0.75))) +
           theme(legend.position = leg_pos,
@@ -154,7 +164,7 @@ plot_catch <- function(d,
       }else{
         g <- g +
           guides(color = guide_legend(ncol = 2,
-                                      title = "Year"))
+                                      title = str_to_title(grp_col)))
       }
     }
 
