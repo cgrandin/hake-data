@@ -31,8 +31,8 @@ create_all_data <- function(){
            species_common_name = "225")
 
   # ----- Weight-at-age
-  create_waa(samples_extra |> mutate(sex = 0), ft_vessels_lu = ft_vessels, type = "wa")
-  create_waa(samples_extra |> mutate(sex = 0), ft_vessels_lu = ft_vessels, type = "wal")
+  samples_extra_rds <- readRDS(file.path(here::here("data-sample"), "samples-extra.rds"))
+  create_waa(samples_extra_rds |> mutate(sex = 0), ft_vessels_lu = ft_vessels)
 
   # ----- Age proportions
   calc_num_fish_aged(samples)
